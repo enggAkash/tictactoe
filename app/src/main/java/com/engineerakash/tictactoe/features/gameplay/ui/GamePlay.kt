@@ -1,7 +1,9 @@
 package com.engineerakash.tictactoe.features.gameplay.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -36,7 +39,7 @@ fun GamePlay() {
     /**
      * -1 -> Not Filled Yet
      * 0 -> Zero (0)
-     * 1 -> Cross (X)
+     * 1 -> Kata (X)
      */
     val boardMatrixValue = rememberSaveable {
         mutableStateOf(
@@ -47,6 +50,11 @@ fun GamePlay() {
                 }
             ))
     }
+
+    val p1Turn = rememberSaveable { mutableStateOf(true) }
+
+    val zeroIcon: Painter = painterResource(R.drawable.ic_zero)
+    val kataIcon: Painter = painterResource(R.drawable.ic_kata)
 
     Scaffold(
 
@@ -63,10 +71,13 @@ fun GamePlay() {
 
             HomeBar()
 
-            Spacer(modifier = Modifier.size(20.dp))
+            Spacer(
+                modifier = Modifier
+                    .size(20.dp)
+                    .fillMaxWidth()
+            )
 
             ZeroKataBoard(boardMatrixValue)
-
 
         }
     }
@@ -74,22 +85,32 @@ fun GamePlay() {
 }
 
 @Composable
-fun ZeroKataBoard(boardMatrixValue: MutableState<Array<Array<Int>>>) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(LightModeDarkModeColor)
-            .padding(10.dp)
-    ) {
+fun ZeroKataBoard(
+    boardMatrixValue: MutableState<Array<Array<Int>>>
+) {
+    Box(modifier = Modifier.padding(horizontal = 10.dp)) {
 
-        for (i in 0 until boardMatrixValue.value.size) {
-
-            for (j in 0 until boardMatrixValue.value[i].size) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(LightModeDarkModeColor)
+        ) {
+            for (i in 0 until boardMatrixValue.value.size) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    for (j in 0 until boardMatrixValue.value[i].size) {
+                        ZeroKataBox(
+                            boardMatrixValue.value[i][j]
+                        )
+                    }
+                }
 
             }
-
         }
-
     }
 }
 
@@ -101,15 +122,21 @@ fun ZeroKataBoard(boardMatrixValue: MutableState<Array<Array<Int>>>) {
 //@Preview
 @Composable
 fun ZeroKataBox(
-    value: Int = -1
+    value: Int = -1,
+
 ) {
     Box(
         modifier = Modifier
             .size(80.dp)
+            .clickable(enabled = true, onClick = {
+                if (value != -1) return@clickable
+
+
+
+            })
             .padding(5.dp)
             .background(BackgroundColor, shape = RectangleShape),
         contentAlignment = Alignment.Center
-
     ) {
 
         if (value == -1) {
@@ -118,7 +145,8 @@ fun ZeroKataBox(
             Icon(
                 painter = painterResource(R.drawable.ic_zero),
                 contentDescription = "",
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
             )
         } else if (value == 1) {
             Icon(
