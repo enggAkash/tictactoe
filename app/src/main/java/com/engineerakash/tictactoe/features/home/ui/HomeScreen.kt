@@ -1,12 +1,12 @@
 package com.engineerakash.tictactoe.features.home.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -33,13 +33,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.engineerakash.tictactoe.R
 import com.engineerakash.tictactoe.core.theme.BackgroundColor
 import com.engineerakash.tictactoe.core.theme.LightModeDarkModeColor
 
 @Preview
 @Composable
-fun HomeScreen() {
+fun HomeScreen(navController: NavHostController) {
 
     Scaffold(
 
@@ -60,14 +61,14 @@ fun HomeScreen() {
 
             AppLogoAndTitle()
 
-            ActionButtons()
+            ActionButtons(navController)
 
         }
     }
 }
 
 @Composable
-private fun ActionButtons() {
+private fun ActionButtons(navController: NavHostController) {
     Column(
         modifier = Modifier
             .fillMaxSize(),
@@ -87,7 +88,11 @@ private fun ActionButtons() {
                 Icon(
                     imageVector = Icons.Filled.Person2,
                     contentDescription = "Play Solo",
-                    modifier = Modifier.size(30.dp)
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clickable(true, onClick = {
+                            navController.navigate("game_play/play_solo")
+                        })
                 )
 
                 Text(
@@ -119,7 +124,11 @@ private fun ActionButtons() {
                 Icon(
                     imageVector = Icons.Filled.Group,
                     contentDescription = "Play Solo",
-                    modifier = Modifier.size(30.dp)
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clickable(true, onClick = {
+                            navController.navigate("game_play/play_with_friend")
+                        })
                 )
 
                 Text(
