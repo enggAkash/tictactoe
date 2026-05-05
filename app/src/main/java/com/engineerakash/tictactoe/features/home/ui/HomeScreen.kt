@@ -1,7 +1,6 @@
 package com.engineerakash.tictactoe.features.home.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,17 +29,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
 import com.engineerakash.tictactoe.R
 import com.engineerakash.tictactoe.core.theme.BackgroundColor
 import com.engineerakash.tictactoe.core.theme.LightModeDarkModeColor
 
-@Preview
 @Composable
-fun HomeScreen(navController: NavHostController) {
+fun HomeScreen(openGamePlayScreen: (String) -> Unit) {
 
     Scaffold(
 
@@ -61,14 +57,14 @@ fun HomeScreen(navController: NavHostController) {
 
             AppLogoAndTitle()
 
-            ActionButtons(navController)
+            ActionButtons(openGamePlayScreen)
 
         }
     }
 }
 
 @Composable
-private fun ActionButtons(navController: NavHostController) {
+private fun ActionButtons(openGamePlayScreen: (String) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize(),
@@ -77,7 +73,10 @@ private fun ActionButtons(navController: NavHostController) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 15.dp, vertical = 10.dp)
+                .padding(horizontal = 15.dp, vertical = 10.dp),
+            onClick = {
+                openGamePlayScreen("play_solo")
+            }
         ) {
             Row(
                 modifier = Modifier.padding(10.dp),
@@ -90,9 +89,6 @@ private fun ActionButtons(navController: NavHostController) {
                     contentDescription = "Play Solo",
                     modifier = Modifier
                         .size(30.dp)
-                        .clickable(true, onClick = {
-                            navController.navigate("game_play/play_solo")
-                        })
                 )
 
                 Text(
@@ -113,7 +109,10 @@ private fun ActionButtons(navController: NavHostController) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 15.dp, vertical = 10.dp)
+                .padding(horizontal = 15.dp, vertical = 10.dp),
+            onClick = {
+                openGamePlayScreen("play_solo")
+            }
         ) {
             Row(
                 modifier = Modifier.padding(10.dp),
@@ -126,9 +125,6 @@ private fun ActionButtons(navController: NavHostController) {
                     contentDescription = "Play Solo",
                     modifier = Modifier
                         .size(30.dp)
-                        .clickable(true, onClick = {
-                            navController.navigate("game_play/play_with_friend")
-                        })
                 )
 
                 Text(

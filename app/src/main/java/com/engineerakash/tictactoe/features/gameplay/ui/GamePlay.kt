@@ -44,7 +44,7 @@ import kotlin.math.roundToInt
 import kotlin.random.Random
 
 @Composable
-fun GamePlay(navController: NavHostController, gameType: String = "play_solo") {
+fun GamePlay(gameType: String, onBackPressed: () -> Unit) {
 
     //gameType -> play_solo, play_with_friend
 
