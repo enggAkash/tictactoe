@@ -20,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -36,7 +37,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
 import com.engineerakash.tictactoe.R
 import com.engineerakash.tictactoe.core.theme.BackgroundColor
 import com.engineerakash.tictactoe.core.theme.LightModeDarkModeColor
@@ -55,12 +55,12 @@ fun GamePlay(gameType: String, onBackPressed: () -> Unit) {
      * 0 -> Zero (0)
      * 1 -> Kata (X)
      */
-    val boardMatrixValue by rememberSaveable {
+    val boardMatrixValue: Array<Array<MutableState<Int>>> by rememberSaveable {
         mutableStateOf(
             Array(
                 3,
                 { i ->
-                    Array(3, { j -> -1 })
+                    Array(3, { j -> mutableIntStateOf(-1) })
                 }
             ))
     }
@@ -128,15 +128,15 @@ fun GamePlay(gameType: String, onBackPressed: () -> Unit) {
             )
 
             ZeroKataBoard(boardMatrixValue) { i, j ->
-                if (boardMatrixValue[i][j] != -1) {
+                if (boardMatrixValue[i][j].value != -1) {
                     // There is already a value, don't overwrite
                     return@ZeroKataBoard
                 }
 
                 if (p1Turn) {
-                    boardMatrixValue[i][j] = p1Index
+                    boardMatrixValue[i][j].value = p1Index
                 } else {
-                    boardMatrixValue[i][j] = 1 - p1Index
+                    boardMatrixValue[i][j].value = 1 - p1Index
                 }
 
                 // TODO Check who wins
@@ -155,8 +155,7 @@ private fun ScoreCounter(
     p2Icon: Painter,
     p1WinCounter: Int,
     p2WinCounter: Int,
-
-    ) {
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth(),
@@ -234,7 +233,7 @@ private fun ScoreCounter(
 
 @Composable
 fun ZeroKataBoard(
-    boardMatrixValue: Array<Array<Int>>, onBoardBoxClicked: (Int, Int) -> Unit
+    boardMatrixValue: Array<Array<MutableState<Int>>>, onBoardBoxClicked: (Int, Int) -> Unit
 ) {
     Box(modifier = Modifier.padding(horizontal = 10.dp)) {
 
@@ -272,7 +271,7 @@ fun ZeroKataBoard(
 //@Preview
 @Composable
 fun ZeroKataBox(
-    value: Int, onBoxClicked: () -> Unit
+    mutableValue: MutableState<Int>, onBoxClicked: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -283,20 +282,22 @@ fun ZeroKataBox(
         contentAlignment = Alignment.Center
     ) {
 
-        if (value == -1) {
+        if (mutableValue.value == -1) {
 
-        } else if (value == 0) {
+        } else if (mutableValue.value == 0) {
             Icon(
                 painter = painterResource(R.drawable.ic_zero),
                 contentDescription = "",
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxSize(),
+                tint = null
             )
-        } else if (value == 1) {
+        } else if (mutableValue.value == 1) {
             Icon(
                 painter = painterResource(R.drawable.ic_kata),
                 contentDescription = "",
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                tint = null
             )
         }
 
@@ -332,4 +333,10 @@ fun getP1P2IconAndIndex(): Triple<Int, Int, Int> {
     val p1Index = Random.nextDouble().roundToInt()
 
     return Triple(icons[p1Index], icons[1 - p1Index], p1Index)
+}
+
+@Preview
+@Composable
+fun PreviewGamePlay() {
+    GamePlay("play_solo") { }
 }
