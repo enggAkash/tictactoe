@@ -34,9 +34,10 @@ import androidx.compose.ui.unit.sp
 import com.engineerakash.tictactoe.R
 import com.engineerakash.tictactoe.core.theme.BackgroundColor
 import com.engineerakash.tictactoe.core.theme.LightModeDarkModeColor
+import com.engineerakash.tictactoe.features.gameplay.ui.GameType
 
 @Composable
-fun HomeScreen(openGamePlayScreen: (String) -> Unit) {
+fun HomeScreen(openGamePlayScreen: (GameType) -> Unit) {
 
     Scaffold(
 
@@ -64,7 +65,7 @@ fun HomeScreen(openGamePlayScreen: (String) -> Unit) {
 }
 
 @Composable
-private fun ActionButtons(openGamePlayScreen: (String) -> Unit) {
+private fun ActionButtons(openGamePlayScreen: (GameType) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize(),
@@ -75,7 +76,7 @@ private fun ActionButtons(openGamePlayScreen: (String) -> Unit) {
                 .fillMaxWidth()
                 .padding(horizontal = 15.dp, vertical = 10.dp),
             onClick = {
-                openGamePlayScreen("play_solo")
+                openGamePlayScreen(GameType.PLAY_SOLO)
             }
         ) {
             Row(
@@ -111,7 +112,7 @@ private fun ActionButtons(openGamePlayScreen: (String) -> Unit) {
                 .fillMaxWidth()
                 .padding(horizontal = 15.dp, vertical = 10.dp),
             onClick = {
-                openGamePlayScreen("play_solo")
+                openGamePlayScreen(GameType.PLAY_WITH_FRIEND)
             }
         ) {
             Row(
@@ -122,7 +123,7 @@ private fun ActionButtons(openGamePlayScreen: (String) -> Unit) {
 
                 Icon(
                     imageVector = Icons.Filled.Group,
-                    contentDescription = "Play Solo",
+                    contentDescription = "Play with a friend",
                     modifier = Modifier
                         .size(30.dp)
                 )

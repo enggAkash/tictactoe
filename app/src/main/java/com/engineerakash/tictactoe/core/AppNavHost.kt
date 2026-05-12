@@ -1,5 +1,6 @@
 package com.engineerakash.tictactoe.core
 
+import android.os.Build
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
@@ -8,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.engineerakash.tictactoe.features.gameplay.ui.GamePlay
+import com.engineerakash.tictactoe.features.gameplay.ui.GameType
 import com.engineerakash.tictactoe.features.home.ui.HomeScreen
 
 @Composable
@@ -32,12 +34,17 @@ fun AppNavHost(navController: NavHostController) {
             route = AppScreens.GamePlay.route,
             arguments = listOf(
                 navArgument("type") {
-                    type = NavType.StringType
+                    type = NavType.EnumType(GameType::class.java)
                 }
             )
         ) { backStackEntry ->
 
-            val type = backStackEntry.arguments?.getString("type") ?: "play_solo"
+            val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                backStackEntry.arguments?.getParcelable<GameType>("type", GameType::class.java)
+                    ?: GameType.PLAY_SOLO
+            } else {
+                backStackEntry.arguments?.getParcelable<GameType>("type") ?: GameType.PLAY_SOLO
+            }
 
             GamePlay(type) {
                 navController.popBackStack()

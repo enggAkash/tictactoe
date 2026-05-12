@@ -1,5 +1,6 @@
 package com.engineerakash.tictactoe.features.gameplay.ui
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -45,12 +46,14 @@ import com.engineerakash.tictactoe.core.theme.LightModeDarkModeColor
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
+private const val TAG = "akt"
+
 @Composable
-fun GamePlay(gameType: String, onBackPressed: () -> Unit) {
+fun GamePlay(gameType: GameType, onBackPressed: () -> Unit) {
 
     //gameType -> play_solo, play_with_friend
 
-    print("Game Type: $gameType")
+    Log.d(TAG, "Game Type: ${gameType.name}")
 
     /**
      * -1 -> Not Filled Yet
@@ -456,5 +459,5 @@ fun isAllBoxesAreFilled(boardMatrixValue: Array<Array<MutableState<Int>>>): Bool
 @Preview
 @Composable
 fun PreviewGamePlay() {
-    GamePlay("play_solo") { }
+    GamePlay(GameType.PLAY_SOLO) { }
 }
