@@ -1,5 +1,6 @@
 package com.engineerakash.tictactoe.core
 
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -13,7 +14,12 @@ import com.engineerakash.tictactoe.features.home.ui.HomeScreen
 fun AppNavHost(navController: NavHostController) {
 
     NavHost(
-        navController = navController, startDestination = AppScreens.Home.route,
+        navController = navController,
+        startDestination = AppScreens.Home.route,
+        enterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
+        exitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
+        popEnterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right) },
+        popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right) }
     ) {
 
         composable(AppScreens.Home.route) {

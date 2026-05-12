@@ -89,7 +89,7 @@ fun GamePlay(gameType: String, onBackPressed: () -> Unit) {
 
             Spacer(modifier = Modifier.size(10.dp))
 
-            HomeBar()
+            HomeBar(onBackPressed)
 
             Spacer(
                 modifier = Modifier
@@ -255,9 +255,11 @@ fun ZeroKataBox(
 }
 
 @Composable
-fun HomeBar() {
+fun HomeBar(onHomeClicked: () -> Unit) {
     Row(
-        modifier = Modifier.padding(10.dp)
+        modifier = Modifier
+            .clickable(enabled = true, onClick = onHomeClicked)
+            .padding(10.dp),
     ) {
         Icon(
             imageVector = if (isSystemInDarkTheme()) Icons.Filled.Home else Icons.Filled.Home,
