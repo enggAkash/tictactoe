@@ -98,6 +98,7 @@ fun GamePlay(gameType: GameType, onBackPressed: () -> Unit) {
         mutableStateOf(mutableStateOf(Pair(false, false)))
     }
 
+    val player2name = rememberSaveable { mutableStateOf("Bot") }
 
     Scaffold { innerPadding ->
 
@@ -125,12 +126,6 @@ fun GamePlay(gameType: GameType, onBackPressed: () -> Unit) {
                     .size(20.dp)
                     .fillMaxWidth()
             )
-
-            /*turnIndicatorText = if (p1Turn.value) {
-                "Your Turn"
-            } else {
-                "Bot's Turn"
-            }*/
 
             Text(
                 turnIndicatorText.value,
@@ -169,7 +164,7 @@ fun GamePlay(gameType: GameType, onBackPressed: () -> Unit) {
                 turnIndicatorText.value = if (p1Turn.value) {
                     "Your Turn"
                 } else {
-                    "Bot's Turn"
+                    "${player2name.value}'s Turn"
                 }
 
                 checkWhoWins(
@@ -198,7 +193,7 @@ fun GamePlay(gameType: GameType, onBackPressed: () -> Unit) {
                             // P2 wins
                             p2WinCounter.value++
 
-                            turnIndicatorText.value = "Bot won"
+                            turnIndicatorText.value = "${player2name.value} won"
 
                             showConfetti.value = Pair(true, false)
                         }
@@ -222,7 +217,8 @@ fun GamePlay(gameType: GameType, onBackPressed: () -> Unit) {
                         showConfetti,
                         p1Turn,
                         isBoardDirty,
-                        turnIndicatorText
+                        turnIndicatorText,
+                        player2name
                     )
                 }
             ) {
@@ -372,7 +368,8 @@ fun resetGame(
     showConfetti: MutableState<Pair<Boolean, Boolean>>,
     p1Turn: MutableState<Boolean>,
     isBoardDirty: MutableState<Boolean>,
-    turnIndicatorText: MutableState<String>
+    turnIndicatorText: MutableState<String>,
+    player2name: MutableState<String>
 ) {
 
     for (i in 0 until boardMatrixValue.size) {
@@ -390,7 +387,7 @@ fun resetGame(
     turnIndicatorText.value = if (p1Turn.value) {
         "Your Turn"
     } else {
-        "Bot's Turn"
+        "${player2name.value}'s Turn"
     }
 }
 
