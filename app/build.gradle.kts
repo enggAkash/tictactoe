@@ -54,6 +54,8 @@ dependencies {
 
     implementation(libs.androidx.navigation.compose)
 
+    implementation(libs.konfetti.compose)
+
     testImplementation(libs.junit)
 
     androidTestImplementation(platform(libs.androidx.compose.bom))
