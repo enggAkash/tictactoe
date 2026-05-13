@@ -1,12 +1,8 @@
 package com.engineerakash.tictactoe.features.gameplay.ui
 
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,9 +11,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Autorenew
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -32,10 +27,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -44,16 +35,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.engineerakash.tictactoe.R
 import com.engineerakash.tictactoe.core.theme.BackgroundColor
-import com.engineerakash.tictactoe.core.theme.LightModeDarkModeColor
+import com.engineerakash.tictactoe.core.ui.HomeBar
+import com.engineerakash.tictactoe.features.gameplay.widgets.DrawConfetti
+import com.engineerakash.tictactoe.features.gameplay.widgets.ScoreCounter
+import com.engineerakash.tictactoe.features.gameplay.widgets.ZeroKataBoard
 import kotlinx.coroutines.delay
-import nl.dionsegijn.konfetti.compose.KonfettiView
-import nl.dionsegijn.konfetti.compose.OnParticleSystemUpdateListener
-import nl.dionsegijn.konfetti.core.Party
-import nl.dionsegijn.konfetti.core.PartySystem
-import nl.dionsegijn.konfetti.core.Position
-import nl.dionsegijn.konfetti.core.emitter.Emitter
-import nl.dionsegijn.konfetti.core.models.Size
-import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
@@ -81,7 +67,7 @@ fun GamePlay(gameType: GameType, onBackPressed: () -> Unit) {
             ))
     }
 
-    var p1Turn by rememberSaveable { mutableStateOf(isP1Turn()) }
+    var p1Turn by rememberSaveable { mutableStateOf(mutableStateOf(isP1Turn())) }
 
     val (p1IconResource, p2IconResource, p1Index) = getP1P2IconAndIndex()
     val p1Icon = painterResource(p1IconResource)
@@ -89,16 +75,27 @@ fun GamePlay(gameType: GameType, onBackPressed: () -> Unit) {
     val p1WinCounter: MutableState<Int> by rememberSaveable { mutableStateOf(mutableIntStateOf(0)) }
     val p2WinCounter: MutableState<Int> by rememberSaveable { mutableStateOf(mutableIntStateOf(0)) }
 
-    val context = LocalContext.current
-
     val confettiShowDuration = 10000L
+
+    var turnIndicatorText: MutableState<String> by rememberSaveable {
+        mutableStateOf(
+            mutableStateOf("Your Turn")
+        )
+    }
+
+    /**
+     * Either it's draw or someone just wins
+     */
+    var isBoardDirty: MutableState<Boolean> by rememberSaveable {
+        mutableStateOf(mutableStateOf(false))
+    }
 
     /**
      * 1st -> Show Confetti
      * 2nd -> isPlayer1 wins
      */
-    var showConfetti by rememberSaveable {
-        mutableStateOf(Pair(false, false))
+    var showConfetti: MutableState<Pair<Boolean, Boolean>> by rememberSaveable {
+        mutableStateOf(mutableStateOf(Pair(false, false)))
     }
 
 
@@ -129,25 +126,20 @@ fun GamePlay(gameType: GameType, onBackPressed: () -> Unit) {
                     .fillMaxWidth()
             )
 
-            if (p1Turn) {
-                Text(
-                    "Your Turn",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
+            /*turnIndicatorText = if (p1Turn.value) {
+                "Your Turn"
             } else {
-                Text(
-                    "Bot Turn",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
+                "Bot's Turn"
+            }*/
+
+            Text(
+                turnIndicatorText.value,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
 
             Spacer(
                 modifier = Modifier
@@ -156,15 +148,28 @@ fun GamePlay(gameType: GameType, onBackPressed: () -> Unit) {
             )
 
             ZeroKataBoard(boardMatrixValue) { i, j ->
+                if (isBoardDirty.value) {
+                    // someone just won the match or, it's a dra
+                    return@ZeroKataBoard
+                }
+
                 if (boardMatrixValue[i][j].value != -1) {
                     // There is already a value, don't overwrite
                     return@ZeroKataBoard
                 }
 
-                if (p1Turn) {
+                if (p1Turn.value) {
                     boardMatrixValue[i][j].value = p1Index
                 } else {
                     boardMatrixValue[i][j].value = 1 - p1Index
+                }
+
+                p1Turn.value = !p1Turn.value
+
+                turnIndicatorText.value = if (p1Turn.value) {
+                    "Your Turn"
+                } else {
+                    "Bot's Turn"
                 }
 
                 checkWhoWins(
@@ -175,137 +180,91 @@ fun GamePlay(gameType: GameType, onBackPressed: () -> Unit) {
                     p1WinCounter,
                     p2WinCounter,
                     whoWins = { indexOfWinner ->
+                        isBoardDirty.value = true
 
                         if (indexOfWinner == -1) {
                             // It's a draw
-                            Toast.makeText(context, "It's a draw!", Toast.LENGTH_LONG)
-                                .show()
+                            turnIndicatorText.value = "It's a draw!"
 
                         } else if (p1Index == indexOfWinner) {
                             // P1 wins
                             p1WinCounter.value++
-                            Toast.makeText(context, "Player 1 wins", Toast.LENGTH_LONG)
-                                .show()
 
-                            showConfetti = Pair(true, true)
+                            turnIndicatorText.value = "You won"
+
+                            showConfetti.value = Pair(true, true)
 
                         } else {
                             // P2 wins
                             p2WinCounter.value++
 
-                            Toast.makeText(context, "Player 2 wins", Toast.LENGTH_LONG)
-                                .show()
+                            turnIndicatorText.value = "Bot won"
 
-                            showConfetti = Pair(true, false)
+                            showConfetti.value = Pair(true, false)
                         }
                     }
                 )
-
-                p1Turn = !p1Turn
             }
 
+            Spacer(
+                modifier = Modifier
+                    .weight(1.0f, true)
+                    .fillMaxWidth()
+            )
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 15.dp, vertical = 10.dp),
+                onClick = {
+                    resetGame(
+                        boardMatrixValue,
+                        showConfetti,
+                        p1Turn,
+                        isBoardDirty,
+                        turnIndicatorText
+                    )
+                }
+            ) {
+                Row(
+                    modifier = Modifier.padding(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+
+                    Icon(
+                        imageVector = Icons.Filled.Autorenew,
+                        contentDescription = "Reset Game",
+                        modifier = Modifier
+                            .size(30.dp)
+                    )
+
+                    Text(
+                        "Reset Game",
+                        modifier = Modifier.fillMaxWidth(),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+
+                }
+            }
+
+            Spacer(
+                modifier = Modifier
+                    .size(20.dp)
+                    .fillMaxWidth()
+            )
         }
 
-        if (showConfetti.first) {
-            DrawConfetti(showConfetti.second, confettiShowDuration)
+        if (showConfetti.value.first) {
+            DrawConfetti(showConfetti.value.second, confettiShowDuration)
 
             LaunchedEffect(Unit) {
                 delay(confettiShowDuration)
-                showConfetti = Pair(false, false)
+                showConfetti.value = Pair(false, false)
             }
         }
-    }
-
-}
-
-@Composable
-fun ZeroKataBoard(
-    boardMatrixValue: Array<Array<MutableState<Int>>>, onBoardBoxClicked: (Int, Int) -> Unit
-) {
-    Box(modifier = Modifier.padding(horizontal = 10.dp)) {
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(LightModeDarkModeColor)
-        ) {
-            for (i in 0 until boardMatrixValue.size) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    for (j in 0 until boardMatrixValue[i].size) {
-                        ZeroKataBox(
-                            boardMatrixValue[i][j]
-                        ) {
-                            onBoardBoxClicked(i, j)
-                        }
-                    }
-                }
-
-            }
-        }
-    }
-}
-
-/**
- * -1 -> Not Filled Yet
- * 0 -> Zero (0)
- * 1 -> Cross (X)
- */
-//@Preview
-@Composable
-fun ZeroKataBox(
-    mutableValue: MutableState<Int>, onBoxClicked: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .size(80.dp)
-            .clickable(enabled = true, onClick = onBoxClicked)
-            .padding(5.dp)
-            .background(BackgroundColor, shape = RectangleShape),
-        contentAlignment = Alignment.Center
-    ) {
-
-        if (mutableValue.value == -1) {
-
-        } else if (mutableValue.value == 0) {
-            Icon(
-                painter = painterResource(R.drawable.ic_zero),
-                contentDescription = "",
-                modifier = Modifier
-                    .fillMaxSize(),
-                tint = null
-            )
-        } else if (mutableValue.value == 1) {
-            Icon(
-                painter = painterResource(R.drawable.ic_kata),
-                contentDescription = "",
-                modifier = Modifier.fillMaxSize(),
-                tint = null
-            )
-        }
-
-    }
-}
-
-@Composable
-fun HomeBar(onHomeClicked: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .clickable(enabled = true, onClick = onHomeClicked)
-            .padding(10.dp),
-    ) {
-        Icon(
-            imageVector = if (isSystemInDarkTheme()) Icons.Filled.Home else Icons.Filled.Home,
-            contentDescription = "",
-            modifier = Modifier
-                .background(LightModeDarkModeColor)
-                .padding(5.dp),
-            tint = Color.White
-        )
     }
 
 }
@@ -322,88 +281,6 @@ fun getP1P2IconAndIndex(): Triple<Int, Int, Int> {
     val p1Index = Random.nextDouble().roundToInt()
 
     return Triple(icons[p1Index], icons[1 - p1Index], p1Index)
-}
-
-@Composable
-private fun ScoreCounter(
-    p1Icon: Painter,
-    p2Icon: Painter,
-    p1WinCounter: MutableState<Int>,
-    p2WinCounter: MutableState<Int>,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly
-    ) {
-
-        Card(
-            colors = CardDefaults.cardColors(LightModeDarkModeColor),
-            modifier = Modifier.padding(10.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(5.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-
-                Icon(
-                    p1Icon,
-                    tint = null,
-                    modifier = Modifier
-                        .size(50.dp)
-                        .padding(5.dp),
-                    contentDescription = "P1 Icon",
-                )
-
-                Row(
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                ) {
-                    Text("You:", color = Color.White, fontWeight = FontWeight.Bold)
-                    Spacer(modifier = Modifier.size(5.dp))
-                    Text(
-                        text = p1WinCounter.value.toString(),
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-            }
-        }
-
-        Card(
-            colors = CardDefaults.cardColors(LightModeDarkModeColor),
-            modifier = Modifier.padding(10.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(5.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-
-                Icon(
-                    p2Icon,
-                    tint = null,
-                    modifier = Modifier
-                        .size(50.dp)
-                        .padding(5.dp),
-                    contentDescription = "P2 Icon",
-                )
-
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text("Bot:", color = Color.White, fontWeight = FontWeight.Bold)
-                    Spacer(modifier = Modifier.size(5.dp))
-                    Text(
-                        text = p2WinCounter.value.toString(),
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-            }
-        }
-
-    }
 }
 
 fun checkWhoWins(
@@ -490,142 +367,30 @@ fun isAllBoxesAreFilled(boardMatrixValue: Array<Array<MutableState<Int>>>): Bool
     return true
 }
 
-@Composable
-fun DrawConfetti(isPlayer1: Boolean, totalDurationAllotedForConfetti: Long) {
+fun resetGame(
+    boardMatrixValue: Array<Array<MutableState<Int>>>,
+    showConfetti: MutableState<Pair<Boolean, Boolean>>,
+    p1Turn: MutableState<Boolean>,
+    isBoardDirty: MutableState<Boolean>,
+    turnIndicatorText: MutableState<String>
+) {
 
-    var showCentreConfetti by rememberSaveable { mutableStateOf(false) }
-    var showLeftOrRightConfetti by rememberSaveable { mutableStateOf(false) }
-    var showBottomConfetti by rememberSaveable { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        showLeftOrRightConfetti = true
-
-        delay(500)
-        showBottomConfetti = true
-
-        delay(500)
-        showCentreConfetti = true
+    for (i in 0 until boardMatrixValue.size) {
+        for (j in 0 until boardMatrixValue[i].size) {
+            boardMatrixValue[i][j].value = -1
+        }
     }
 
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        // Center Confetti
-        if (showCentreConfetti) {
-            KonfettiView(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .align(Alignment.Center),
-                parties = listOf(
-                    Party(
-                        speed = 10f,
-                        maxSpeed = 30f,
-                        damping = 0.9f,
-                        spread = 360, // Bursts in all directions
-                        colors = listOf(
-                            Color.Red.toArgb(),
-                            Color.Green.toArgb(),
-                            Color.Blue.toArgb(),
-                            Color.Yellow.toArgb(),
-                            Color.Magenta.toArgb(),
-                            Color.Cyan.toArgb()
-                        ),
-                        emitter = Emitter(duration = 3000, TimeUnit.MILLISECONDS).max(500),
-                        size = listOf(Size.LARGE)
-                    )
-                )
-            )
-        }
+    showConfetti.value = Pair(false, false)
 
-        if (showLeftOrRightConfetti) {
-            KonfettiView(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .align(if (isPlayer1) Alignment.CenterStart else Alignment.CenterEnd),
-                parties = listOf(
-                    Party(
-                        speed = 10f,
-                        maxSpeed = 30f,
-                        damping = 0.9f,
-                        spread = 360, // Bursts in all directions
-                        colors = listOf(
-                            Color.Red.toArgb(),
-                            Color.Green.toArgb(),
-                            Color.Blue.toArgb(),
-                            Color.Yellow.toArgb(),
-                            Color.Magenta.toArgb(),
-                            Color.Cyan.toArgb()
-                        ),
-                        emitter = Emitter(duration =5000, TimeUnit.MILLISECONDS).max(500),
-                        size = listOf(Size.LARGE),
-                        position = Position.Relative(if (isPlayer1) 0.1 else 0.9, 0.5)
-                    )
-                ),
-                updateListener = object : OnParticleSystemUpdateListener {
-                    override fun onParticleSystemEnded(
-                        system: PartySystem,
-                        activeSystems: Int
-                    ) {
-                        Log.d(
-                            TAG,
-                            "onParticleSystemEnded: System: $system\tActiveSystems: $activeSystems"
-                        )
-                        // Turn off confetti rendering once it finishes animating
-                        /*if (system.particles.isEmpty()) {
-                        showConfetti = false
-                    }*/
-                    }
+    p1Turn.value = true
 
-                }
+    isBoardDirty.value = false
 
-            )
-
-        }
-
-        if (showBottomConfetti) {
-            KonfettiView(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .align(Alignment.BottomCenter),
-                parties = listOf(
-                    Party(
-                        speed = 10f,
-                        maxSpeed = 30f,
-                        damping = 0.9f,
-                        spread = 360, // Bursts in all directions
-                        colors = listOf(
-                            Color.Red.toArgb(),
-                            Color.Green.toArgb(),
-                            Color.Blue.toArgb(),
-                            Color.Yellow.toArgb(),
-                            Color.Magenta.toArgb(),
-                            Color.Cyan.toArgb()
-                        ),
-                        emitter = Emitter(duration = 3000, TimeUnit.MILLISECONDS).max(500),
-                        size = listOf(Size.LARGE),
-                        position = Position.Relative(0.5, 1.0)
-                    )
-                ),
-                updateListener = object : OnParticleSystemUpdateListener {
-                    override fun onParticleSystemEnded(
-                        system: PartySystem,
-                        activeSystems: Int
-                    ) {
-                        Log.d(
-                            TAG,
-                            "onParticleSystemEnded: System: $system\tActiveSystems: $activeSystems"
-                        )
-                        // Turn off confetti rendering once it finishes animating
-                        /*if (system.particles.isEmpty()) {
-                        showConfetti = false
-                    }*/
-                    }
-
-                }
-
-            )
-
-        }
+    turnIndicatorText.value = if (p1Turn.value) {
+        "Your Turn"
+    } else {
+        "Bot's Turn"
     }
 }
 
