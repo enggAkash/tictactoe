@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -65,6 +66,23 @@ fun GamePlay(gameType: GameType, onBackPressed: () -> Unit) {
                     Array(3, { j -> mutableIntStateOf(-1) })
                 }
             ))
+    }
+
+    val emptyBoxes by rememberSaveable {
+        derivedStateOf {
+            /**
+             * this list will store, i and j index of empty boxes (matrix)
+             */
+            val list = arrayListOf<Pair<Int, Int>>()
+            for (i in 0 until boardMatrixValue.size) {
+                for (j in 0 until boardMatrixValue[i].size) {
+                    if (boardMatrixValue[i][j].value == -1) {
+                        list.add(Pair(i, j))
+                    }
+                }
+            }
+            list.toTypedArray()
+        }
     }
 
     var p1Turn by rememberSaveable { mutableStateOf(mutableStateOf(isP1Turn())) }
@@ -144,7 +162,7 @@ fun GamePlay(gameType: GameType, onBackPressed: () -> Unit) {
 
             ZeroKataBoard(boardMatrixValue) { i, j ->
                 if (isBoardDirty.value) {
-                    // someone just won the match or, it's a dra
+                    // someone just won the match or, it's a draw
                     return@ZeroKataBoard
                 }
 
@@ -165,6 +183,18 @@ fun GamePlay(gameType: GameType, onBackPressed: () -> Unit) {
                     "Your Turn"
                 } else {
                     "${player2name.value}'s Turn"
+                }
+
+                if (!p1Turn.value) {
+                    // Player's 2 (Bot's) turn
+
+                    val tempEmptyBox = emptyBoxes
+
+                    val boxIndex = tempEmptyBox[(Math.random() * tempEmptyBox.size).roundToInt()
+                        .coerceAtMost(tempEmptyBox.size - 1)]
+
+                    //todo CALL onBoxClicked()
+
                 }
 
                 checkWhoWins(
