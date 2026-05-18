@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.engineerakash.tictactoe.R
 import com.engineerakash.tictactoe.core.theme.BackgroundColor
 import com.engineerakash.tictactoe.core.theme.LightModeDarkModeColor
+import com.engineerakash.tictactoe.core.util.GameType
 import com.engineerakash.tictactoe.core.util.PlayerType
 import com.engineerakash.tictactoe.features.gameplay.viewmodel.GamePlayViewModel
 
@@ -46,7 +47,38 @@ fun ZeroKataBoard(
                         ZeroKataBox(
                             viewModel.boardMatrixValue[i][j]
                         ) {
-                            viewModel.onBoardBoxClicked(i, j, PlayerType.P1)
+                            if (viewModel.gameType == GameType.PLAY_WITH_BOT) {
+                                viewModel.onBoardBoxClicked(
+                                    i, j,
+                                    PlayerType.P1
+                                )
+                            } else if (viewModel.gameType == GameType.PLAY_WITH_FRIEND_OFFLINE) {
+                                if (viewModel.whoHasPlayedCurrentMove == null || viewModel.whoHasPlayedCurrentMove == PlayerType.P2) {
+                                    viewModel.onBoardBoxClicked(
+                                        i, j,
+                                        PlayerType.P1
+                                    )
+                                } else {
+                                    viewModel.onBoardBoxClicked(
+                                        i, j,
+                                        PlayerType.P2
+                                    )
+                                }
+
+                            } else if (viewModel.gameType == GameType.PLAY_WITH_FRIEND_ONLINE) {
+                                //todo connect with websocket
+                                if (viewModel.whoHasPlayedCurrentMove == null || viewModel.whoHasPlayedCurrentMove == PlayerType.P2) {
+                                    viewModel.onBoardBoxClicked(
+                                        i, j,
+                                        PlayerType.P1
+                                    )
+                                } else {
+                                    viewModel.onBoardBoxClicked(
+                                        i, j,
+                                        PlayerType.P2
+                                    )
+                                }
+                            }
                         }
                     }
                 }

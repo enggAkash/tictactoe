@@ -18,7 +18,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,6 +33,7 @@ import com.engineerakash.tictactoe.core.ui.HomeBar
 import com.engineerakash.tictactoe.core.util.CONFETTI_SHOW_DURATION
 import com.engineerakash.tictactoe.core.util.GameType
 import com.engineerakash.tictactoe.features.gameplay.viewmodel.GamePlayViewModel
+import com.engineerakash.tictactoe.features.gameplay.viewmodel.GamePlayViewModelFactory
 import com.engineerakash.tictactoe.features.gameplay.widgets.DrawConfetti
 import com.engineerakash.tictactoe.features.gameplay.widgets.ScoreCounter
 import com.engineerakash.tictactoe.features.gameplay.widgets.ZeroKataBoard
@@ -44,9 +44,12 @@ private const val TAG = "akt"
 @Composable
 fun GamePlay(
     gameType: GameType,
-    onBackPressed: () -> Unit,
-    viewModel: GamePlayViewModel = viewModel()
+    onBackPressed: () -> Unit
 ) {
+
+    val viewModel: GamePlayViewModel = viewModel<GamePlayViewModel>(
+        factory = GamePlayViewModelFactory(gameType)
+    )
 
     Log.d(TAG, "Game Type: ${gameType.name}")
 
@@ -157,5 +160,5 @@ fun GamePlay(
 @Preview
 @Composable
 fun PreviewGamePlay() {
-    GamePlay(GameType.PLAY_SOLO, {})
+    GamePlay(GameType.PLAY_WITH_BOT, {})
 }

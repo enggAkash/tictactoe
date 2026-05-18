@@ -97,7 +97,7 @@ fun ScoreCounter(
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-                    Text("Bot:", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text("${viewModel.player2name}:", color = Color.White, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.size(5.dp))
                     Text(
                         text = viewModel.p2WinCounter.toString(),

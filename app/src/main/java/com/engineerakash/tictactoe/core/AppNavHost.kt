@@ -41,9 +41,9 @@ fun AppNavHost(navController: NavHostController) {
 
             val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 backStackEntry.arguments?.getParcelable<GameType>("type", GameType::class.java)
-                    ?: GameType.PLAY_SOLO
+                    ?: GameType.PLAY_WITH_BOT
             } else {
-                backStackEntry.arguments?.getParcelable<GameType>("type") ?: GameType.PLAY_SOLO
+                backStackEntry.arguments?.getParcelable<GameType>("type") ?: GameType.PLAY_WITH_BOT
             }
 
             GamePlay(gameType = type, onBackPressed = {

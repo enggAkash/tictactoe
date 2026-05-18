@@ -76,7 +76,7 @@ private fun ActionButtons(openGamePlayScreen: (GameType) -> Unit) {
                 .fillMaxWidth()
                 .padding(horizontal = 15.dp, vertical = 10.dp),
             onClick = {
-                openGamePlayScreen(GameType.PLAY_SOLO)
+                openGamePlayScreen(GameType.PLAY_WITH_BOT)
             }
         ) {
             Row(
@@ -112,7 +112,7 @@ private fun ActionButtons(openGamePlayScreen: (GameType) -> Unit) {
                 .fillMaxWidth()
                 .padding(horizontal = 15.dp, vertical = 10.dp),
             onClick = {
-                openGamePlayScreen(GameType.PLAY_WITH_FRIEND)
+                openGamePlayScreen(GameType.PLAY_WITH_FRIEND_OFFLINE)
             }
         ) {
             Row(
@@ -123,13 +123,50 @@ private fun ActionButtons(openGamePlayScreen: (GameType) -> Unit) {
 
                 Icon(
                     imageVector = Icons.Filled.Group,
-                    contentDescription = "Play with a friend",
+                    contentDescription = "Play with a friend offline",
                     modifier = Modifier
                         .size(30.dp)
                 )
 
                 Text(
-                    "Play with a friend",
+                    "Play with a friend offline",
+                    modifier = Modifier.fillMaxWidth(),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
+
+            }
+        }
+
+
+        Spacer(
+            modifier = Modifier.size(20.dp)
+        )
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 15.dp, vertical = 10.dp),
+            onClick = {
+                openGamePlayScreen(GameType.PLAY_WITH_FRIEND_ONLINE)
+            }
+        ) {
+            Row(
+                modifier = Modifier.padding(10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+
+                Icon(
+                    imageVector = Icons.Filled.Group,
+                    contentDescription = "Play with a friend online",
+                    modifier = Modifier
+                        .size(30.dp)
+                )
+
+                Text(
+                    "Play with a friend Online",
                     modifier = Modifier.fillMaxWidth(),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,

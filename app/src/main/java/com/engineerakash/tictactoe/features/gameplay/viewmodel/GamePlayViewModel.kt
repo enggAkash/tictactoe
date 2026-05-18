@@ -10,13 +10,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.engineerakash.tictactoe.R
 import com.engineerakash.tictactoe.core.util.BOT_THINKING_TIME_IN_MILLI
+import com.engineerakash.tictactoe.core.util.GameType
 import com.engineerakash.tictactoe.core.util.PlayerType
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
-class GamePlayViewModel : ViewModel() {
+class GamePlayViewModel(val gameType: GameType) : ViewModel() {
 
 
     /**
@@ -76,7 +77,13 @@ class GamePlayViewModel : ViewModel() {
         )
     )
 
-    val player2name by mutableStateOf("Bot")
+    val player2name by derivedStateOf {
+        if (gameType == GameType.PLAY_WITH_BOT) {
+            "Bot"
+        } else {
+            "Friend"
+        }
+    }
 
 
     var p1IconResource: Int
@@ -138,7 +145,7 @@ class GamePlayViewModel : ViewModel() {
         } else if (indexOfWinner == -2) {
             // No one wins yet, continue playing
 
-            if (playerType == PlayerType.P1 && emptyBoxes.isNotEmpty()) {
+            if (gameType == GameType.PLAY_WITH_BOT && playerType == PlayerType.P1 && emptyBoxes.isNotEmpty()) {
                 // Player's 2 (Bot's) turn
 
                 val tempEmptyBox = emptyBoxes
@@ -190,8 +197,7 @@ class GamePlayViewModel : ViewModel() {
     fun checkWhoWins(
         boardMatrixValue: Array<Array<MutableState<Int>>>,
         p1Index: Int,
-//        whoWins: (Int) -> Unit
-    ) : Int {
+    ): Int {
         val isAllBoxesAreFilled = isAllBoxesAreFilled(boardMatrixValue)
 
         val indexOfWinner = indexOfWhoWins(boardMatrixValue)
