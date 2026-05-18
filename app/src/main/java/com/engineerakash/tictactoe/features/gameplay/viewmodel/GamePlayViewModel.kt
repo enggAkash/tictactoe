@@ -7,8 +7,12 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.engineerakash.tictactoe.R
-import com.engineerakash.tictactoe.features.gameplay.ui.checkWhoWins
+import com.engineerakash.tictactoe.core.util.BOT_THINKING_TIME_IN_MILLI
+import com.engineerakash.tictactoe.core.util.PlayerType
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
@@ -48,13 +52,11 @@ class GamePlayViewModel : ViewModel() {
         list.toTypedArray()
     }
 
-    var p1Turn by mutableStateOf(isP1Turn())
+    var whoseTurnIsThis: PlayerType? by mutableStateOf(null)
 
 
     var p1WinCounter: Int by mutableIntStateOf(0)
     var p2WinCounter: Int by mutableIntStateOf(0)
-
-    val confettiShowDuration = 10000L
 
     var turnIndicatorText: String by mutableStateOf(
         "Your Turn"
@@ -102,75 +104,192 @@ class GamePlayViewModel : ViewModel() {
         return Triple(icons[p1Index], icons[1 - p1Index], p1Index)
     }
 
-    fun isP1Turn(): Boolean {
-        return true
-    }
-
-    fun onBoardBoxClicked(i: Int, j: Int) {
+    fun onBoardBoxClicked(i: Int, j: Int, playerType: PlayerType) {
         if (isBoardDirty) {
             // someone just won the match or, it's a draw
             return
         }
+
+        val whoPlayedTheLastMove = whoseTurnIsThis
+        if (whoPlayedTheLastMove == playerType) {
+            // You have already played, it's other player's turn
+            return
+        }
+
+        whoseTurnIsThis = playerType
 
         if (boardMatrixValue[i][j].value != -1) {
             // There is already a value, don't overwrite
             return
         }
 
-        if (p1Turn) {
+        if (playerType == PlayerType.P1) {
             boardMatrixValue[i][j].value = p1Index
         } else {
             boardMatrixValue[i][j].value = 1 - p1Index
         }
 
-        p1Turn = !p1Turn
+        val indexOfWinner = checkWhoWins(boardMatrixValue, p1Index)
 
-        turnIndicatorText = if (p1Turn) {
-            "Your Turn"
-        } else {
-            "${player2name}'s Turn"
-        }
+        if (indexOfWinner == -1) {
+            isBoardDirty = true
 
-        if (!p1Turn) {
-            // Player's 2 (Bot's) turn
+            // It's a draw
+            turnIndicatorText = "It's a draw!"
 
-            val tempEmptyBox = emptyBoxes
+        } else if (indexOfWinner == -2) {
+            // No one wins yet, continue playing
 
-            val boxIndex = tempEmptyBox[(Math.random() * tempEmptyBox.size).roundToInt()
-                .coerceAtMost(tempEmptyBox.size - 1)]
+            if (playerType == PlayerType.P1 && emptyBoxes.isNotEmpty()) {
+                // Player's 2 (Bot's) turn
 
-            //todo CALL onBoxClicked()
+                val tempEmptyBox = emptyBoxes
 
-        }
+                val boxIndex = tempEmptyBox[(Math.random() * tempEmptyBox.size).roundToInt()
+                    .coerceAtMost(tempEmptyBox.size - 1)]
 
-        checkWhoWins(
-            boardMatrixValue,
-            p1Index,
-            whoWins = { indexOfWinner ->
-                isBoardDirty = true
-
-                if (indexOfWinner == -1) {
-                    // It's a draw
-                    turnIndicatorText = "It's a draw!"
-
-                } else if (p1Index == indexOfWinner) {
-                    // P1 wins
-                    p1WinCounter++
-
-                    turnIndicatorText = "You won"
-
-                    showConfetti = Pair(true, true)
-
-                } else {
-                    // P2 wins
-                    p2WinCounter++
-
-                    turnIndicatorText = "${player2name} won"
-
-                    showConfetti = Pair(true, false)
+                viewModelScope.launch {
+                    //bot's thinking state
+                    delay(BOT_THINKING_TIME_IN_MILLI)
+                    onBoardBoxClicked(boxIndex.first, boxIndex.second, PlayerType.P2)
                 }
             }
-        )
+
+        } else if (p1Index == indexOfWinner) {
+            isBoardDirty = true
+
+            // P1 wins
+            p1WinCounter++
+
+            turnIndicatorText = "You won"
+
+            showConfetti = Pair(true, true)
+
+        } else {
+            isBoardDirty = true
+
+            // P2 wins
+            p2WinCounter++
+
+            turnIndicatorText = "$player2name won"
+
+            showConfetti = Pair(true, false)
+        }
+
+
+        if (!isBoardDirty) {
+            //someone just won, or it's a draw, don't show this turn indicator
+
+            turnIndicatorText = if (playerType == PlayerType.P1) {
+                "${player2name}'s Turn"
+            } else {
+                "Your Turn"
+            }
+        }
+
+    }
+
+    fun checkWhoWins(
+        boardMatrixValue: Array<Array<MutableState<Int>>>,
+        p1Index: Int,
+//        whoWins: (Int) -> Unit
+    ) : Int {
+        val isAllBoxesAreFilled = isAllBoxesAreFilled(boardMatrixValue)
+
+        val indexOfWinner = indexOfWhoWins(boardMatrixValue)
+
+        if (indexOfWinner == -1) {
+            // currently no one wins
+        } else if (p1Index == indexOfWinner) {
+            // P1 wins
+            return indexOfWinner
+        } else {
+            // P2 wins
+            return indexOfWinner
+        }
+
+        if (!isAllBoxesAreFilled) {
+            //no one wins
+            return -2
+        }
+
+        // It's a Draw
+        return -1
+    }
+
+    /**
+     * 0 -> if Zero(0) wins
+     * 1 -> if Kata(x) wins
+     * -1 -> if it's a draw
+     */
+    fun indexOfWhoWins(boardMatrixValue: Array<Array<MutableState<Int>>>): Int {
+
+        /**
+         * [00] [01] [02]
+         * [10] [11] [12]
+         * [20] [21] [22]
+         */
+
+        /*Horizontal Matching*/
+        if (boardMatrixValue[0][0].value == boardMatrixValue[0][1].value && boardMatrixValue[0][1].value == boardMatrixValue[0][2].value) {
+            return boardMatrixValue[0][0].value
+        } else if (boardMatrixValue[1][0].value == boardMatrixValue[1][1].value && boardMatrixValue[1][1].value == boardMatrixValue[1][2].value) {
+            return boardMatrixValue[1][0].value
+        } else if (boardMatrixValue[2][0].value == boardMatrixValue[2][1].value && boardMatrixValue[2][1].value == boardMatrixValue[2][2].value) {
+            return boardMatrixValue[2][0].value
+        }
+
+        /*Vertical Matching*/
+        if (boardMatrixValue[0][0].value == boardMatrixValue[1][0].value && boardMatrixValue[1][0].value == boardMatrixValue[2][0].value) {
+            return boardMatrixValue[0][0].value
+        } else if (boardMatrixValue[0][1].value == boardMatrixValue[1][1].value && boardMatrixValue[1][1].value == boardMatrixValue[2][1].value) {
+            return boardMatrixValue[0][1].value
+        } else if (boardMatrixValue[0][2].value == boardMatrixValue[1][2].value && boardMatrixValue[1][2].value == boardMatrixValue[2][2].value) {
+            return boardMatrixValue[0][2].value
+        }
+
+        /*Diagonal Matching*/
+        if (boardMatrixValue[0][0].value == boardMatrixValue[1][1].value && boardMatrixValue[1][1].value == boardMatrixValue[2][2].value) {
+            return boardMatrixValue[0][0].value
+        } else if (boardMatrixValue[0][2].value == boardMatrixValue[1][1].value && boardMatrixValue[1][1].value == boardMatrixValue[2][0].value) {
+            return boardMatrixValue[0][2].value
+        }
+
+        return -1
+    }
+
+    fun isAllBoxesAreFilled(boardMatrixValue: Array<Array<MutableState<Int>>>): Boolean {
+        for (i in 0 until boardMatrixValue.size) {
+            for (j in 0 until boardMatrixValue[i].size) {
+                if (boardMatrixValue[i][j].value == -1) {
+                    return false
+                }
+            }
+        }
+
+        return true
+    }
+
+    fun resetGame(viewModel: GamePlayViewModel) {
+
+        for (i in 0 until viewModel.boardMatrixValue.size) {
+            for (j in 0 until viewModel.boardMatrixValue[i].size) {
+                viewModel.boardMatrixValue[i][j].value = -1
+            }
+        }
+
+        viewModel.showConfetti = Pair(false, false)
+
+        viewModel.whoseTurnIsThis = null
+
+        viewModel.isBoardDirty = false
+
+        viewModel.turnIndicatorText =
+            if (whoseTurnIsThis == null || whoseTurnIsThis == PlayerType.P1) {
+                "Your Turn"
+            } else {
+                "${viewModel.player2name}'s Turn"
+            }
     }
 
 }

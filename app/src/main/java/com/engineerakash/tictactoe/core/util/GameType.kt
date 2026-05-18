@@ -1,4 +1,4 @@
-package com.engineerakash.tictactoe.features.gameplay.ui
+package com.engineerakash.tictactoe.core.util
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize

@@ -9,7 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.engineerakash.tictactoe.features.gameplay.ui.GamePlay
-import com.engineerakash.tictactoe.features.gameplay.ui.GameType
+import com.engineerakash.tictactoe.core.util.GameType
 import com.engineerakash.tictactoe.features.home.ui.HomeScreen
 
 @Composable

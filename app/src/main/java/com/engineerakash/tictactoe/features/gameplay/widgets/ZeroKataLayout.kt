@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.engineerakash.tictactoe.R
 import com.engineerakash.tictactoe.core.theme.BackgroundColor
 import com.engineerakash.tictactoe.core.theme.LightModeDarkModeColor
+import com.engineerakash.tictactoe.core.util.PlayerType
 import com.engineerakash.tictactoe.features.gameplay.viewmodel.GamePlayViewModel
 
 @Composable
@@ -45,7 +46,7 @@ fun ZeroKataBoard(
                         ZeroKataBox(
                             viewModel.boardMatrixValue[i][j]
                         ) {
-                            viewModel.onBoardBoxClicked(i, j)
+                            viewModel.onBoardBoxClicked(i, j, PlayerType.P1)
                         }
                     }
                 }

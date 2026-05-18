@@ -1,6 +1,6 @@
 package com.engineerakash.tictactoe.core
 
-import com.engineerakash.tictactoe.features.gameplay.ui.GameType
+import com.engineerakash.tictactoe.core.util.GameType
 
 
 sealed class AppScreens(val route: String) {

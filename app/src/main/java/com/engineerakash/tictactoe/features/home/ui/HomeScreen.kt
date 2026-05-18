@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.sp
 import com.engineerakash.tictactoe.R
 import com.engineerakash.tictactoe.core.theme.BackgroundColor
 import com.engineerakash.tictactoe.core.theme.LightModeDarkModeColor
-import com.engineerakash.tictactoe.features.gameplay.ui.GameType
+import com.engineerakash.tictactoe.core.util.GameType
 
 @Composable
 fun HomeScreen(openGamePlayScreen: (GameType) -> Unit) {
