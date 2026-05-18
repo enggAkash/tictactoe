@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.engineerakash.tictactoe.R
+import com.engineerakash.tictactoe.features.gameplay.ui.checkWhoWins
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
@@ -78,6 +79,19 @@ class GamePlayViewModel : ViewModel() {
     val player2name by mutableStateOf("Bot")
 
 
+    var p1IconResource: Int
+    var p2IconResource: Int
+    var p1Index: Int
+
+    init {
+        var (tempP1IconResource, tempP2IconResource, tempP1Index) = getP1P2IconAndIndex()
+
+        p1IconResource = tempP1IconResource
+        p2IconResource = tempP2IconResource
+        p1Index = tempP1Index
+
+    }
+
     /**
      * Generates random Zero(0) and Kata(X) icon for both players
      */
@@ -90,6 +104,73 @@ class GamePlayViewModel : ViewModel() {
 
     fun isP1Turn(): Boolean {
         return true
+    }
+
+    fun onBoardBoxClicked(i: Int, j: Int) {
+        if (isBoardDirty) {
+            // someone just won the match or, it's a draw
+            return
+        }
+
+        if (boardMatrixValue[i][j].value != -1) {
+            // There is already a value, don't overwrite
+            return
+        }
+
+        if (p1Turn) {
+            boardMatrixValue[i][j].value = p1Index
+        } else {
+            boardMatrixValue[i][j].value = 1 - p1Index
+        }
+
+        p1Turn = !p1Turn
+
+        turnIndicatorText = if (p1Turn) {
+            "Your Turn"
+        } else {
+            "${player2name}'s Turn"
+        }
+
+        if (!p1Turn) {
+            // Player's 2 (Bot's) turn
+
+            val tempEmptyBox = emptyBoxes
+
+            val boxIndex = tempEmptyBox[(Math.random() * tempEmptyBox.size).roundToInt()
+                .coerceAtMost(tempEmptyBox.size - 1)]
+
+            //todo CALL onBoxClicked()
+
+        }
+
+        checkWhoWins(
+            boardMatrixValue,
+            p1Index,
+            whoWins = { indexOfWinner ->
+                isBoardDirty = true
+
+                if (indexOfWinner == -1) {
+                    // It's a draw
+                    turnIndicatorText = "It's a draw!"
+
+                } else if (p1Index == indexOfWinner) {
+                    // P1 wins
+                    p1WinCounter++
+
+                    turnIndicatorText = "You won"
+
+                    showConfetti = Pair(true, true)
+
+                } else {
+                    // P2 wins
+                    p2WinCounter++
+
+                    turnIndicatorText = "${player2name} won"
+
+                    showConfetti = Pair(true, false)
+                }
+            }
+        )
     }
 
 }

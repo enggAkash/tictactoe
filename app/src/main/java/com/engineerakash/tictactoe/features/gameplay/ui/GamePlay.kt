@@ -36,7 +36,6 @@ import com.engineerakash.tictactoe.features.gameplay.widgets.DrawConfetti
 import com.engineerakash.tictactoe.features.gameplay.widgets.ScoreCounter
 import com.engineerakash.tictactoe.features.gameplay.widgets.ZeroKataBoard
 import kotlinx.coroutines.delay
-import kotlin.math.roundToInt
 
 private const val TAG = "akt"
 
@@ -47,19 +46,10 @@ fun GamePlay(
     viewModel: GamePlayViewModel = viewModel()
 ) {
 
-    //gameType -> play_solo, play_with_friend
-
     Log.d(TAG, "Game Type: ${gameType.name}")
 
-    val (p1IconResource, p2IconResource, p1Index) = viewModel.getP1P2IconAndIndex()
-    val p1Icon = painterResource(p1IconResource)
-    val p2Icon = painterResource(p2IconResource)
-
-    LaunchedEffect(Unit) {
-        delay(5000)
-        viewModel.turnIndicatorText = "Random Name"
-
-    }
+    val p1Icon = painterResource(viewModel.p1IconResource)
+    val p2Icon = painterResource(viewModel.p2IconResource)
 
     Scaffold { innerPadding ->
 
@@ -103,74 +93,7 @@ fun GamePlay(
                     .fillMaxWidth()
             )
 
-            ZeroKataBoard(viewModel.boardMatrixValue) { i, j ->
-                if (viewModel.isBoardDirty) {
-                    // someone just won the match or, it's a draw
-                    return@ZeroKataBoard
-                }
-
-                if (viewModel.boardMatrixValue[i][j].value != -1) {
-                    // There is already a value, don't overwrite
-                    return@ZeroKataBoard
-                }
-
-                if (viewModel.p1Turn) {
-                    viewModel.boardMatrixValue[i][j].value = p1Index
-                } else {
-                    viewModel.boardMatrixValue[i][j].value = 1 - p1Index
-                }
-
-                viewModel.p1Turn = !viewModel.p1Turn
-
-                viewModel.turnIndicatorText = if (viewModel.p1Turn) {
-                    "Your Turn"
-                } else {
-                    "${viewModel.player2name}'s Turn"
-                }
-
-                if (!viewModel.p1Turn) {
-                    // Player's 2 (Bot's) turn
-
-                    val tempEmptyBox = viewModel.emptyBoxes
-
-                    val boxIndex = tempEmptyBox[(Math.random() * tempEmptyBox.size).roundToInt()
-                        .coerceAtMost(tempEmptyBox.size - 1)]
-
-                    //todo CALL onBoxClicked()
-
-                }
-
-                checkWhoWins(
-                    viewModel.boardMatrixValue,
-                    p1IconResource,
-                    p2IconResource,
-                    p1Index,
-                    whoWins = { indexOfWinner ->
-                        viewModel.isBoardDirty = true
-
-                        if (indexOfWinner == -1) {
-                            // It's a draw
-                            viewModel.turnIndicatorText = "It's a draw!"
-
-                        } else if (p1Index == indexOfWinner) {
-                            // P1 wins
-                            viewModel.p1WinCounter++
-
-                            viewModel.turnIndicatorText = "You won"
-
-                            viewModel.showConfetti = Pair(true, true)
-
-                        } else {
-                            // P2 wins
-                            viewModel.p2WinCounter++
-
-                            viewModel.turnIndicatorText = "${viewModel.player2name} won"
-
-                            viewModel.showConfetti = Pair(true, false)
-                        }
-                    }
-                )
-            }
+            ZeroKataBoard(viewModel)
 
             Spacer(
                 modifier = Modifier
@@ -232,8 +155,6 @@ fun GamePlay(
 
 fun checkWhoWins(
     boardMatrixValue: Array<Array<MutableState<Int>>>,
-    p1IconResource: Int,
-    p2IconResource: Int,
     p1Index: Int,
     whoWins: (Int) -> Unit
 ) {

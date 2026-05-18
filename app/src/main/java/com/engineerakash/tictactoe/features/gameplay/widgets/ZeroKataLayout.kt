@@ -21,10 +21,11 @@ import androidx.compose.ui.unit.dp
 import com.engineerakash.tictactoe.R
 import com.engineerakash.tictactoe.core.theme.BackgroundColor
 import com.engineerakash.tictactoe.core.theme.LightModeDarkModeColor
+import com.engineerakash.tictactoe.features.gameplay.viewmodel.GamePlayViewModel
 
 @Composable
 fun ZeroKataBoard(
-    boardMatrixValue: Array<Array<MutableState<Int>>>, onBoardBoxClicked: (Int, Int) -> Unit
+    viewModel: GamePlayViewModel/*boardMatrixValue: Array<Array<MutableState<Int>>>, onBoardBoxClicked: (Int, Int) -> Unit*/
 ) {
     Box(modifier = Modifier.padding(horizontal = 10.dp)) {
 
@@ -33,18 +34,18 @@ fun ZeroKataBoard(
                 .fillMaxWidth()
                 .background(LightModeDarkModeColor)
         ) {
-            for (i in 0 until boardMatrixValue.size) {
+            for (i in 0 until viewModel.boardMatrixValue.size) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    for (j in 0 until boardMatrixValue[i].size) {
+                    for (j in 0 until viewModel.boardMatrixValue[i].size) {
                         ZeroKataBox(
-                            boardMatrixValue[i][j]
+                            viewModel.boardMatrixValue[i][j]
                         ) {
-                            onBoardBoxClicked(i, j)
+                            viewModel.onBoardBoxClicked(i, j)
                         }
                     }
                 }
