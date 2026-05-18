@@ -20,13 +20,13 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.engineerakash.tictactoe.core.theme.LightModeDarkModeColor
+import com.engineerakash.tictactoe.features.gameplay.viewmodel.GamePlayViewModel
 
 @Composable
 fun ScoreCounter(
     p1Icon: Painter,
     p2Icon: Painter,
-    p1WinCounter: MutableState<Int>,
-    p2WinCounter: MutableState<Int>,
+    viewModel: GamePlayViewModel
 ) {
     Row(
         modifier = Modifier
@@ -58,7 +58,7 @@ fun ScoreCounter(
                     Text("You:", color = Color.White, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.size(5.dp))
                     Text(
-                        text = p1WinCounter.value.toString(),
+                        text = viewModel.p1WinCounter.toString(),
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )
@@ -91,7 +91,7 @@ fun ScoreCounter(
                     Text("Bot:", color = Color.White, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.size(5.dp))
                     Text(
-                        text = p2WinCounter.value.toString(),
+                        text = viewModel.p2WinCounter.toString(),
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )

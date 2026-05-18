@@ -46,9 +46,9 @@ fun AppNavHost(navController: NavHostController) {
                 backStackEntry.arguments?.getParcelable<GameType>("type") ?: GameType.PLAY_SOLO
             }
 
-            GamePlay(type) {
+            GamePlay(gameType = type, onBackPressed = {
                 navController.popBackStack()
-            }
+            })
 
         }
 

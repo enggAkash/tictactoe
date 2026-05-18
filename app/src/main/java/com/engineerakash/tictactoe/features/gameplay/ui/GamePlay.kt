@@ -19,12 +19,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,89 +28,38 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.engineerakash.tictactoe.R
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.engineerakash.tictactoe.core.theme.BackgroundColor
 import com.engineerakash.tictactoe.core.ui.HomeBar
+import com.engineerakash.tictactoe.features.gameplay.viewmodel.GamePlayViewModel
 import com.engineerakash.tictactoe.features.gameplay.widgets.DrawConfetti
 import com.engineerakash.tictactoe.features.gameplay.widgets.ScoreCounter
 import com.engineerakash.tictactoe.features.gameplay.widgets.ZeroKataBoard
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
-import kotlin.random.Random
 
 private const val TAG = "akt"
 
 @Composable
-fun GamePlay(gameType: GameType, onBackPressed: () -> Unit) {
+fun GamePlay(
+    gameType: GameType,
+    onBackPressed: () -> Unit,
+    viewModel: GamePlayViewModel = viewModel()
+) {
 
     //gameType -> play_solo, play_with_friend
 
     Log.d(TAG, "Game Type: ${gameType.name}")
 
-    /**
-     * -1 -> Not Filled Yet
-     * 0 -> Zero (0)
-     * 1 -> Kata (X)
-     */
-    val boardMatrixValue: Array<Array<MutableState<Int>>> by rememberSaveable {
-        mutableStateOf(
-            Array(
-                3,
-                { i ->
-                    Array(3, { j -> mutableIntStateOf(-1) })
-                }
-            ))
-    }
-
-    val emptyBoxes by rememberSaveable {
-        derivedStateOf {
-            /**
-             * this list will store, i and j index of empty boxes (matrix)
-             */
-            val list = arrayListOf<Pair<Int, Int>>()
-            for (i in 0 until boardMatrixValue.size) {
-                for (j in 0 until boardMatrixValue[i].size) {
-                    if (boardMatrixValue[i][j].value == -1) {
-                        list.add(Pair(i, j))
-                    }
-                }
-            }
-            list.toTypedArray()
-        }
-    }
-
-    var p1Turn by rememberSaveable { mutableStateOf(mutableStateOf(isP1Turn())) }
-
-    val (p1IconResource, p2IconResource, p1Index) = getP1P2IconAndIndex()
+    val (p1IconResource, p2IconResource, p1Index) = viewModel.getP1P2IconAndIndex()
     val p1Icon = painterResource(p1IconResource)
     val p2Icon = painterResource(p2IconResource)
-    val p1WinCounter: MutableState<Int> by rememberSaveable { mutableStateOf(mutableIntStateOf(0)) }
-    val p2WinCounter: MutableState<Int> by rememberSaveable { mutableStateOf(mutableIntStateOf(0)) }
 
-    val confettiShowDuration = 10000L
+    LaunchedEffect(Unit) {
+        delay(5000)
+        viewModel.turnIndicatorText = "Random Name"
 
-    var turnIndicatorText: MutableState<String> by rememberSaveable {
-        mutableStateOf(
-            mutableStateOf("Your Turn")
-        )
     }
-
-    /**
-     * Either it's draw or someone just wins
-     */
-    var isBoardDirty: MutableState<Boolean> by rememberSaveable {
-        mutableStateOf(mutableStateOf(false))
-    }
-
-    /**
-     * 1st -> Show Confetti
-     * 2nd -> isPlayer1 wins
-     */
-    var showConfetti: MutableState<Pair<Boolean, Boolean>> by rememberSaveable {
-        mutableStateOf(mutableStateOf(Pair(false, false)))
-    }
-
-    val player2name = rememberSaveable { mutableStateOf("Bot") }
 
     Scaffold { innerPadding ->
 
@@ -137,7 +80,7 @@ fun GamePlay(gameType: GameType, onBackPressed: () -> Unit) {
                     .fillMaxWidth()
             )
 
-            ScoreCounter(p1Icon, p2Icon, p1WinCounter, p2WinCounter)
+            ScoreCounter(p1Icon, p2Icon, viewModel)
 
             Spacer(
                 modifier = Modifier
@@ -146,7 +89,7 @@ fun GamePlay(gameType: GameType, onBackPressed: () -> Unit) {
             )
 
             Text(
-                turnIndicatorText.value,
+                viewModel.turnIndicatorText,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
@@ -160,35 +103,35 @@ fun GamePlay(gameType: GameType, onBackPressed: () -> Unit) {
                     .fillMaxWidth()
             )
 
-            ZeroKataBoard(boardMatrixValue) { i, j ->
-                if (isBoardDirty.value) {
+            ZeroKataBoard(viewModel.boardMatrixValue) { i, j ->
+                if (viewModel.isBoardDirty) {
                     // someone just won the match or, it's a draw
                     return@ZeroKataBoard
                 }
 
-                if (boardMatrixValue[i][j].value != -1) {
+                if (viewModel.boardMatrixValue[i][j].value != -1) {
                     // There is already a value, don't overwrite
                     return@ZeroKataBoard
                 }
 
-                if (p1Turn.value) {
-                    boardMatrixValue[i][j].value = p1Index
+                if (viewModel.p1Turn) {
+                    viewModel.boardMatrixValue[i][j].value = p1Index
                 } else {
-                    boardMatrixValue[i][j].value = 1 - p1Index
+                    viewModel.boardMatrixValue[i][j].value = 1 - p1Index
                 }
 
-                p1Turn.value = !p1Turn.value
+                viewModel.p1Turn = !viewModel.p1Turn
 
-                turnIndicatorText.value = if (p1Turn.value) {
+                viewModel.turnIndicatorText = if (viewModel.p1Turn) {
                     "Your Turn"
                 } else {
-                    "${player2name.value}'s Turn"
+                    "${viewModel.player2name}'s Turn"
                 }
 
-                if (!p1Turn.value) {
+                if (!viewModel.p1Turn) {
                     // Player's 2 (Bot's) turn
 
-                    val tempEmptyBox = emptyBoxes
+                    val tempEmptyBox = viewModel.emptyBoxes
 
                     val boxIndex = tempEmptyBox[(Math.random() * tempEmptyBox.size).roundToInt()
                         .coerceAtMost(tempEmptyBox.size - 1)]
@@ -198,34 +141,32 @@ fun GamePlay(gameType: GameType, onBackPressed: () -> Unit) {
                 }
 
                 checkWhoWins(
-                    boardMatrixValue,
+                    viewModel.boardMatrixValue,
                     p1IconResource,
                     p2IconResource,
                     p1Index,
-                    p1WinCounter,
-                    p2WinCounter,
                     whoWins = { indexOfWinner ->
-                        isBoardDirty.value = true
+                        viewModel.isBoardDirty = true
 
                         if (indexOfWinner == -1) {
                             // It's a draw
-                            turnIndicatorText.value = "It's a draw!"
+                            viewModel.turnIndicatorText = "It's a draw!"
 
                         } else if (p1Index == indexOfWinner) {
                             // P1 wins
-                            p1WinCounter.value++
+                            viewModel.p1WinCounter++
 
-                            turnIndicatorText.value = "You won"
+                            viewModel.turnIndicatorText = "You won"
 
-                            showConfetti.value = Pair(true, true)
+                            viewModel.showConfetti = Pair(true, true)
 
                         } else {
                             // P2 wins
-                            p2WinCounter.value++
+                            viewModel.p2WinCounter++
 
-                            turnIndicatorText.value = "${player2name.value} won"
+                            viewModel.turnIndicatorText = "${viewModel.player2name} won"
 
-                            showConfetti.value = Pair(true, false)
+                            viewModel.showConfetti = Pair(true, false)
                         }
                     }
                 )
@@ -242,14 +183,7 @@ fun GamePlay(gameType: GameType, onBackPressed: () -> Unit) {
                     .fillMaxWidth()
                     .padding(horizontal = 15.dp, vertical = 10.dp),
                 onClick = {
-                    resetGame(
-                        boardMatrixValue,
-                        showConfetti,
-                        p1Turn,
-                        isBoardDirty,
-                        turnIndicatorText,
-                        player2name
-                    )
+                    resetGame(viewModel)
                 }
             ) {
                 Row(
@@ -283,39 +217,24 @@ fun GamePlay(gameType: GameType, onBackPressed: () -> Unit) {
             )
         }
 
-        if (showConfetti.value.first) {
-            DrawConfetti(showConfetti.value.second, confettiShowDuration)
+        if (viewModel.showConfetti.first) {
+            DrawConfetti(viewModel.showConfetti.second, viewModel.confettiShowDuration)
 
             LaunchedEffect(Unit) {
-                delay(confettiShowDuration)
-                showConfetti.value = Pair(false, false)
+                delay(viewModel.confettiShowDuration)
+                viewModel.showConfetti = Pair(false, false)
             }
         }
     }
 
 }
 
-fun isP1Turn(): Boolean {
-    return true
-}
-
-/**
- * Generates random Zero(0) and Kata(X) icon for both players
- */
-fun getP1P2IconAndIndex(): Triple<Int, Int, Int> {
-    val icons = arrayOf(R.drawable.ic_zero, R.drawable.ic_kata)
-    val p1Index = Random.nextDouble().roundToInt()
-
-    return Triple(icons[p1Index], icons[1 - p1Index], p1Index)
-}
 
 fun checkWhoWins(
     boardMatrixValue: Array<Array<MutableState<Int>>>,
     p1IconResource: Int,
     p2IconResource: Int,
     p1Index: Int,
-    p1WinCounter: MutableState<Int>,
-    p2WinCounter: MutableState<Int>,
     whoWins: (Int) -> Unit
 ) {
     val isAllBoxesAreFilled = isAllBoxesAreFilled(boardMatrixValue)
@@ -393,36 +312,29 @@ fun isAllBoxesAreFilled(boardMatrixValue: Array<Array<MutableState<Int>>>): Bool
     return true
 }
 
-fun resetGame(
-    boardMatrixValue: Array<Array<MutableState<Int>>>,
-    showConfetti: MutableState<Pair<Boolean, Boolean>>,
-    p1Turn: MutableState<Boolean>,
-    isBoardDirty: MutableState<Boolean>,
-    turnIndicatorText: MutableState<String>,
-    player2name: MutableState<String>
-) {
+fun resetGame(viewModel: GamePlayViewModel) {
 
-    for (i in 0 until boardMatrixValue.size) {
-        for (j in 0 until boardMatrixValue[i].size) {
-            boardMatrixValue[i][j].value = -1
+    for (i in 0 until viewModel.boardMatrixValue.size) {
+        for (j in 0 until viewModel.boardMatrixValue[i].size) {
+            viewModel.boardMatrixValue[i][j].value = -1
         }
     }
 
-    showConfetti.value = Pair(false, false)
+    viewModel.showConfetti = Pair(false, false)
 
-    p1Turn.value = true
+    viewModel.p1Turn = true
 
-    isBoardDirty.value = false
+    viewModel.isBoardDirty = false
 
-    turnIndicatorText.value = if (p1Turn.value) {
+    viewModel.turnIndicatorText = if (viewModel.p1Turn) {
         "Your Turn"
     } else {
-        "${player2name.value}'s Turn"
+        "${viewModel.player2name}'s Turn"
     }
 }
 
 @Preview
 @Composable
 fun PreviewGamePlay() {
-    GamePlay(GameType.PLAY_SOLO) { }
+    GamePlay(GameType.PLAY_SOLO, {})
 }
