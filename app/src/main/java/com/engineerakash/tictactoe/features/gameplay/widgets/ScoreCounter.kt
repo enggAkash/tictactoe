@@ -1,5 +1,6 @@
 package com.engineerakash.tictactoe.features.gameplay.widgets
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,7 +13,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.engineerakash.tictactoe.core.theme.LightModeDarkModeColor
+import com.engineerakash.tictactoe.core.util.PlayerType
 import com.engineerakash.tictactoe.features.gameplay.viewmodel.GamePlayViewModel
 
 @Composable
@@ -36,11 +37,15 @@ fun ScoreCounter(
 
         Card(
             colors = CardDefaults.cardColors(LightModeDarkModeColor),
-            modifier = Modifier.padding(10.dp)
+            modifier = Modifier.padding(10.dp),
+            border = if (viewModel.whoHasPlayedCurrentMove == null || viewModel.whoHasPlayedCurrentMove == PlayerType.P2) BorderStroke(
+                2.dp,
+                Color.White
+            ) else null
         ) {
             Column(
                 modifier = Modifier.padding(5.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
 
                 Icon(
@@ -69,7 +74,11 @@ fun ScoreCounter(
 
         Card(
             colors = CardDefaults.cardColors(LightModeDarkModeColor),
-            modifier = Modifier.padding(10.dp)
+            modifier = Modifier.padding(10.dp),
+            border = if (viewModel.whoHasPlayedCurrentMove == PlayerType.P1) BorderStroke(
+                2.dp,
+                Color.White
+            ) else null
         ) {
             Column(
                 modifier = Modifier.padding(5.dp),

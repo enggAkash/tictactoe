@@ -19,8 +19,6 @@ import kotlin.random.Random
 class GamePlayViewModel : ViewModel() {
 
 
-    //onBoardBoxClicked: (Int, Int) -> Unit
-
     /**
      * -1 -> Not Filled Yet
      * 0 -> Zero (0)
@@ -52,7 +50,7 @@ class GamePlayViewModel : ViewModel() {
         list.toTypedArray()
     }
 
-    var whoseTurnIsThis: PlayerType? by mutableStateOf(null)
+    var whoHasPlayedCurrentMove: PlayerType? by mutableStateOf(null)
 
 
     var p1WinCounter: Int by mutableIntStateOf(0)
@@ -110,13 +108,13 @@ class GamePlayViewModel : ViewModel() {
             return
         }
 
-        val whoPlayedTheLastMove = whoseTurnIsThis
+        val whoPlayedTheLastMove = whoHasPlayedCurrentMove
         if (whoPlayedTheLastMove == playerType) {
             // You have already played, it's other player's turn
             return
         }
 
-        whoseTurnIsThis = playerType
+        whoHasPlayedCurrentMove = playerType
 
         if (boardMatrixValue[i][j].value != -1) {
             // There is already a value, don't overwrite
@@ -280,12 +278,12 @@ class GamePlayViewModel : ViewModel() {
 
         viewModel.showConfetti = Pair(false, false)
 
-        viewModel.whoseTurnIsThis = null
+        viewModel.whoHasPlayedCurrentMove = null
 
         viewModel.isBoardDirty = false
 
         viewModel.turnIndicatorText =
-            if (whoseTurnIsThis == null || whoseTurnIsThis == PlayerType.P1) {
+            if (whoHasPlayedCurrentMove == null || whoHasPlayedCurrentMove == PlayerType.P1) {
                 "Your Turn"
             } else {
                 "${viewModel.player2name}'s Turn"
