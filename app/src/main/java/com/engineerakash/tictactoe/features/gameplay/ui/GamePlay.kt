@@ -38,6 +38,7 @@ import com.engineerakash.tictactoe.features.gameplay.widgets.DrawConfetti
 import com.engineerakash.tictactoe.features.gameplay.widgets.ScoreCounter
 import com.engineerakash.tictactoe.features.gameplay.widgets.ZeroKataBoard
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 private const val TAG = "akt"
 
@@ -149,7 +150,7 @@ fun GamePlay(
             DrawConfetti(viewModel.showConfetti.second, CONFETTI_SHOW_DURATION)
 
             LaunchedEffect(Unit) {
-                delay(CONFETTI_SHOW_DURATION)
+                delay(CONFETTI_SHOW_DURATION.milliseconds)
                 viewModel.showConfetti = Pair(false, false)
             }
         }

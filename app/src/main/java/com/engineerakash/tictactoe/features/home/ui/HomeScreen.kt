@@ -14,7 +14,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Person2
+import androidx.compose.material.icons.filled.PhoneIphone
+import androidx.compose.material.icons.filled.SignalCellularAlt
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
@@ -29,6 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.engineerakash.tictactoe.R
@@ -87,13 +91,13 @@ private fun ActionButtons(openGamePlayScreen: (GameType) -> Unit) {
 
                 Icon(
                     imageVector = Icons.Filled.Person2,
-                    contentDescription = "Play Solo",
+                    contentDescription = stringResource(R.string.play_solo),
                     modifier = Modifier
                         .size(30.dp)
                 )
 
                 Text(
-                    "Play Solo",
+                    stringResource(R.string.play_solo),
                     modifier = Modifier.fillMaxWidth(),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
@@ -123,13 +127,13 @@ private fun ActionButtons(openGamePlayScreen: (GameType) -> Unit) {
 
                 Icon(
                     imageVector = Icons.Filled.Group,
-                    contentDescription = "Play with a friend offline",
+                    contentDescription = stringResource(R.string.play_with_a_friend_offline),
                     modifier = Modifier
                         .size(30.dp)
                 )
 
                 Text(
-                    "Play with a friend offline",
+                    stringResource(R.string.play_with_a_friend_offline),
                     modifier = Modifier.fillMaxWidth(),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
@@ -159,14 +163,26 @@ private fun ActionButtons(openGamePlayScreen: (GameType) -> Unit) {
             ) {
 
                 Icon(
-                    imageVector = Icons.Filled.Group,
-                    contentDescription = "Play with a friend online",
+                    imageVector = Icons.Filled.Person,
+                    contentDescription = stringResource(R.string.play_with_a_friend_online),
+                    modifier = Modifier
+                        .size(30.dp)
+                )
+                Icon(
+                    imageVector = Icons.Filled.SignalCellularAlt,
+                    contentDescription = stringResource(R.string.play_with_a_friend_online),
+                    modifier = Modifier
+                        .size(30.dp)
+                )
+                Icon(
+                    imageVector = Icons.Filled.Person,
+                    contentDescription = stringResource(R.string.play_with_a_friend_online),
                     modifier = Modifier
                         .size(30.dp)
                 )
 
                 Text(
-                    "Play with a friend Online",
+                    stringResource(R.string.play_with_a_friend_online),
                     modifier = Modifier.fillMaxWidth(),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
@@ -226,4 +242,11 @@ private fun TopBar() {
                 .padding(5.dp)
         )
     }
+}
+
+
+@Preview
+@Composable
+fun HomeScreenPreview() {
+    HomeScreen(openGamePlayScreen = {})
 }
