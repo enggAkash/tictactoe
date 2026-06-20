@@ -17,17 +17,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.engineerakash.tictactoe.R
 import com.engineerakash.tictactoe.core.theme.LightModeDarkModeColor
 import com.engineerakash.tictactoe.core.util.PlayerType
-import com.engineerakash.tictactoe.features.gameplay.viewmodel.GamePlayViewModel
 
 @Composable
 fun ScoreCounter(
     p1Icon: Painter,
     p2Icon: Painter,
-    viewModel: GamePlayViewModel
+    whoHasPlayedCurrentMove: PlayerType?,
+    p1WinCounter: Int,
+    p2WinCounter: Int,
+    player2name: String
 ) {
     Row(
         modifier = Modifier
@@ -38,7 +43,7 @@ fun ScoreCounter(
         Card(
             colors = CardDefaults.cardColors(LightModeDarkModeColor),
             modifier = Modifier.padding(10.dp),
-            border = if (viewModel.whoHasPlayedCurrentMove == null || viewModel.whoHasPlayedCurrentMove == PlayerType.P2) BorderStroke(
+            border = if (whoHasPlayedCurrentMove == null || whoHasPlayedCurrentMove == PlayerType.P2) BorderStroke(
                 2.dp,
                 Color.White
             ) else null
@@ -63,7 +68,7 @@ fun ScoreCounter(
                     Text("You:", color = Color.White, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.size(5.dp))
                     Text(
-                        text = viewModel.p1WinCounter.toString(),
+                        text = p1WinCounter.toString(),
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )
@@ -75,7 +80,7 @@ fun ScoreCounter(
         Card(
             colors = CardDefaults.cardColors(LightModeDarkModeColor),
             modifier = Modifier.padding(10.dp),
-            border = if (viewModel.whoHasPlayedCurrentMove == PlayerType.P1) BorderStroke(
+            border = if (whoHasPlayedCurrentMove == PlayerType.P1) BorderStroke(
                 2.dp,
                 Color.White
             ) else null
@@ -97,10 +102,14 @@ fun ScoreCounter(
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-                    Text("${viewModel.player2name}:", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(
+                        "${player2name}:",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
                     Spacer(modifier = Modifier.size(5.dp))
                     Text(
-                        text = viewModel.p2WinCounter.toString(),
+                        text = p2WinCounter.toString(),
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )
@@ -110,4 +119,17 @@ fun ScoreCounter(
         }
 
     }
+}
+
+@Preview
+@Composable
+fun ScoreCounterPreview() {
+    ScoreCounter(
+        p1Icon = painterResource(R.drawable.ic_zero),
+        p2Icon = painterResource(R.drawable.ic_kata),
+        whoHasPlayedCurrentMove = null,
+        p1WinCounter = 0,
+        p2WinCounter = 0,
+        player2name = "Player 2"
+    )
 }

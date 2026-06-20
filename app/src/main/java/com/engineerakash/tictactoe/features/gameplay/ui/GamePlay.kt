@@ -76,7 +76,14 @@ fun GamePlay(
                     .fillMaxWidth()
             )
 
-            ScoreCounter(p1Icon, p2Icon, viewModel)
+            ScoreCounter(
+                p1Icon,
+                p2Icon,
+                viewModel.whoHasPlayedCurrentMove,
+                viewModel.p1WinCounter,
+                viewModel.p2WinCounter,
+                viewModel.player2name
+            )
 
             Spacer(
                 modifier = Modifier
