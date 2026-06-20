@@ -16,6 +16,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.milliseconds
 
 class GamePlayViewModel(val gameType: GameType) : ViewModel() {
 
@@ -121,12 +122,12 @@ class GamePlayViewModel(val gameType: GameType) : ViewModel() {
             return
         }
 
-        whoHasPlayedCurrentMove = playerType
-
         if (boardMatrixValue[i][j].value != -1) {
             // There is already a value, don't overwrite
             return
         }
+
+        whoHasPlayedCurrentMove = playerType
 
         if (playerType == PlayerType.P1) {
             boardMatrixValue[i][j].value = p1Index
@@ -155,7 +156,7 @@ class GamePlayViewModel(val gameType: GameType) : ViewModel() {
 
                 viewModelScope.launch {
                     //bot's thinking state
-                    delay(BOT_THINKING_TIME_IN_MILLI)
+                    delay(BOT_THINKING_TIME_IN_MILLI.milliseconds)
                     onBoardBoxClicked(boxIndex.first, boxIndex.second, PlayerType.P2)
                 }
             }
